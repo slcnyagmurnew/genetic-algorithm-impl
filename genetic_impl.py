@@ -5,10 +5,11 @@ import argparse
 import os
 
 population_size = 5000
-max_iter = 400
+max_iter = 200
 mutation_rate = 0.0001
 move = [[0, 0], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1], [1, 0], [1, 1]]
 cost_values = [0, 45, 90, 135, 180]
+best_score = 0.0
 
 
 class Individual:
@@ -102,12 +103,16 @@ if __name__ == '__main__':
         for i in population:
             i.fitness()
 
-        best = 0
+        local_best = 0
         for i in population:
-            if best < i.fitness_score:
-                best = i.fitness_score
+            if local_best < i.fitness_score:
+                local_best = i.fitness_score
+                if best_score == 0.0:
+                    best_score = local_best
                 generated_image = np.array(i.condition.reshape(dim, dim), dtype=np.uint8)
-                i.save_best(filename=file, img=generated_image, p=population_size, m=mutation_rate)
+                if best_score < local_best:
+                    best_score = local_best
+                    i.save_best(filename=file, img=generated_image, p=population_size, m=mutation_rate)
 
         cv2.imshow("Generated image", generated_image)
         cv2.waitKey(1)
@@ -116,7 +121,8 @@ if __name__ == '__main__':
             cv2.waitKey(1)
             break
 
-        print("Generation:", iterations + 1, "\tScore:", str(round(best, 4)))
+        print("Generation:", iterations + 1, "\tScore:", str(round(local_best, 4)))
+        print("Current best score:", best_score)
         new_population = []
 
         for i in range(len(population)):
